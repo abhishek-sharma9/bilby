@@ -32,9 +32,7 @@ class InterferometerList(list):
             if isinstance(ifo, str):
                 ifo = get_empty_interferometer(ifo)
             if not isinstance(ifo, (Interferometer, TriangularInterferometer)):
-                raise TypeError(
-                    "Input list of interferometers are not all Interferometer objects"
-                )
+                raise TypeError("Input list of interferometers are not all Interferometer objects")
             else:
                 self.append(ifo)
         self._check_interferometers()
@@ -59,10 +57,7 @@ class InterferometerList(list):
         """
         consistent_attributes = ["duration", "start_time", "sampling_frequency"]
         for attribute in consistent_attributes:
-            x = [
-                getattr(interferometer.strain_data, attribute)
-                for interferometer in self
-            ]
+            x = [getattr(interferometer.strain_data, attribute) for interferometer in self]
             try:
                 if not all(y == x[0] for y in x):
                     ifo_strs = [
@@ -111,9 +106,7 @@ class InterferometerList(list):
                 random_state=random_state,
             )
 
-    def set_strain_data_from_zero_noise(
-        self, sampling_frequency, duration, start_time=0
-    ):
+    def set_strain_data_from_zero_noise(self, sampling_frequency, duration, start_time=0):
         """Set the `Interferometer.strain_data` to zero in each detector
 
         See :py:meth:`bilby.gw.detector.InterferometerStrainData.set_from_zero_noise`
@@ -143,7 +136,7 @@ class InterferometerList(list):
         waveform_generator=None,
         raise_error=True,
     ):
-        """ Inject a signal into noise in each of the three detectors.
+        """Inject a signal into noise in each of the three detectors.
 
         Parameters
         ==========
@@ -174,13 +167,10 @@ class InterferometerList(list):
         """
         if injection_polarizations is None:
             if waveform_generator is not None:
-                injection_polarizations = waveform_generator.frequency_domain_strain(
-                    parameters
-                )
+                injection_polarizations = waveform_generator.frequency_domain_strain(parameters)
             else:
                 raise ValueError(
-                    "inject_signal needs one of waveform_generator or "
-                    "injection_polarizations."
+                    "inject_signal needs one of waveform_generator or injection_polarizations."
                 )
 
         all_injection_polarizations = list()
@@ -216,8 +206,13 @@ class InterferometerList(list):
             interferometer.plot_data(signal=signal, outdir=outdir, label=label)
 
     def plot_time_domain_data(
-        self, outdir=".", label=None, bandpass_frequencies=(50, 250),
-        notches=None, start_end=None, t0=None
+        self,
+        outdir=".",
+        label=None,
+        bandpass_frequencies=(50, 250),
+        notches=None,
+        start_end=None,
+        t0=None,
     ):
         """Plots the strain data in the time domain for each of the
         interfeormeters
@@ -249,7 +244,7 @@ class InterferometerList(list):
                 bandpass_frequencies=bandpass_frequencies,
                 notches=notches,
                 start_end=start_end,
-                t0=t0
+                t0=t0,
             )
 
     @property
@@ -290,9 +285,7 @@ class InterferometerList(list):
     @property
     def meta_data(self):
         """Dictionary of the per-interferometer meta_data"""
-        return {
-            interferometer.name: interferometer.meta_data for interferometer in self
-        }
+        return {interferometer.name: interferometer.meta_data for interferometer in self}
 
     @staticmethod
     def _filename_from_outdir_label_extension(outdir, label, extension="h5"):
@@ -323,9 +316,7 @@ class InterferometerList(list):
     def to_pickle(self, outdir="outdir", label="ifo_list"):
         utils.check_directory_exists_and_if_not_mkdir(outdir)
         label = label + "_" + "".join(ifo.name for ifo in self)
-        filename = self._filename_from_outdir_label_extension(
-            outdir, label, extension="pkl"
-        )
+        filename = self._filename_from_outdir_label_extension(outdir, label, extension="pkl")
         safe_file_dump(self, filename, "dill")
 
     @classmethod
@@ -338,9 +329,7 @@ class InterferometerList(list):
             raise TypeError("The loaded object is not an InterferometerList")
         return res
 
-    to_pickle.__doc__ = _save_docstring.format(
-        format="pickle", extra=".. versionadded:: 1.1.0"
-    )
+    to_pickle.__doc__ = _save_docstring.format(format="pickle", extra=".. versionadded:: 1.1.0")
     from_pickle.__doc__ = _load_docstring.format(format="pickle")
 
     def set_array_backend(self, xp):
@@ -400,29 +389,25 @@ class TriangularInterferometer(InterferometerList):
 
             phi1 = np.radians(latitude)
             phi2 = np.arcsin(
-                np.sin(phi1) * np.cos(length * 1e3 / utils.radius_of_earth) +
-                np.cos(phi1) * np.sin(length * 1e3 / utils.radius_of_earth) * np.cos(np.radians(brng))
+                np.sin(phi1) * np.cos(length * 1e3 / utils.radius_of_earth)
+                + np.cos(phi1)
+                * np.sin(length * 1e3 / utils.radius_of_earth)
+                * np.cos(np.radians(brng))
             )
             latitude = np.degrees(phi2)
 
             lam1 = np.radians(longitude)
             lam2 = lam1 + np.arctan2(
-                np.sin(np.radians(brng)) * np.sin(length * 1e3 / utils.radius_of_earth) * np.cos(phi1),
-                np.cos(length * 1e3 / utils.radius_of_earth) - np.sin(phi1) * np.sin(phi2)
+                np.sin(np.radians(brng))
+                * np.sin(length * 1e3 / utils.radius_of_earth)
+                * np.cos(phi1),
+                np.cos(length * 1e3 / utils.radius_of_earth) - np.sin(phi1) * np.sin(phi2),
             )
             longitude = np.degrees(lam2)
 
             brng += 240
             xarm_azimuth += 240
             yarm_azimuth += 240
-
-
-_LEGACY_DETECTOR_NAMES = {
-    # GEO600 was renamed to its LAL/channel-name prefix, G1, so that
-    # InterferometerList(["G1"]) matches the "G1:..." channel names found
-    # in GEO frame files. This alias keeps the old identifier working.
-    "GEO600": "G1",
-}
 
 
 def get_empty_interferometer(name):
@@ -432,18 +417,16 @@ def get_empty_interferometer(name):
     These objects do not have any noise instantiated.
 
     The available instruments are:
-        H1, L1, V1, G1, CE
-
-    ``GEO600`` is accepted as a deprecated alias for ``G1``.
+        H1, L1, V1, GEO600, CE
 
     Detector positions taken from:
         L1/H1: LIGO-T980044-10
-        V1/G1: arXiv:gr-qc/0008066 [45]
+        V1/GEO600: arXiv:gr-qc/0008066 [45]
         CE: located at the site of H1
 
     Detector sensitivities:
         H1/L1/V1: https://dcc.ligo.org/LIGO-P1200087-v42/public
-        G1: http://www.geo600.org/1032083/GEO600_Sensitivity_Curves
+        GEO600: http://www.geo600.org/1032083/GEO600_Sensitivity_Curves
         CE: https://dcc.ligo.org/LIGO-P1600143/public
 
 
@@ -457,14 +440,6 @@ def get_empty_interferometer(name):
     interferometer: Interferometer
         Interferometer instance
     """
-    if name in _LEGACY_DETECTOR_NAMES:
-        new_name = _LEGACY_DETECTOR_NAMES[name]
-        logger.warning(
-            "Interferometer name '{}' is deprecated, use '{}' instead.".format(
-                name, new_name
-            )
-        )
-        name = new_name
     filename = os.path.join(
         os.path.dirname(__file__), "detectors", "{}.interferometer".format(name)
     )
@@ -496,9 +471,7 @@ def load_interferometer(filename):
         parameters.pop("shape")
         ifo = TriangularInterferometer(**parameters)
     else:
-        raise IOError(
-            "{} could not be loaded. Invalid parameter 'shape'.".format(filename)
-        )
+        raise IOError("{} could not be loaded. Invalid parameter 'shape'.".format(filename))
     return ifo
 
 
