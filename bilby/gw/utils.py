@@ -1055,6 +1055,45 @@ def calculate_time_to_merger(frequency, mass_1, mass_2, chi=0, safety=1.1):
         -1
     )
 
+def calculate_time_inband(frequency_min, frequency_max, mass_1, mass_2, chi=0, safety=1.1):
+    """ Leading-order calculation of the time to merger from frequency
+
+    This uses the XLALSimInspiralTaylorF2ReducedSpinChirpTime routine to
+    estimate the time to merger. Based on the implementation in
+    `pycbc.pnutils._get_imr_duration`.
+
+    Parameters
+    ==========
+    frequency: float
+        The frequency (Hz) of the signal from which to calculate the time to merger
+    mass_1, mass_2: float
+        The detector frame component masses
+    chi: float
+        Dimensionless aligned-spin param
+    safety:
+        Multiplicitive safety factor
+
+    Returns
+    =======
+    time_to_merger: float
+        The time to merger from frequency in seconds
+    """
+
+    import lalsimulation
+
+    return safety * lalsimulation.SimInspiralTaylorF2ReducedSpinChirpTime(
+        float(frequency_min),
+        float(mass_1 * solar_mass),
+        float(mass_2 * solar_mass),
+        float(chi),
+        -1
+    ) - safety * lalsimulation.SimInspiralTaylorF2ReducedSpinChirpTime(
+        float(frequency_max),
+        float(mass_1 * solar_mass),
+        float(mass_2 * solar_mass),
+        float(chi),
+        -1
+    )
 
 def safe_cast_mode_to_int(value):
     """Converts a string or integer, representing a mode index in a mode array, to an integer.
