@@ -392,11 +392,18 @@ class Interferometer(object):
                 return
 
         # Calculate the time to merger
-        deltaT = gwutils.calculate_time_to_merger(
-            frequency=self.minimum_frequency,
-            mass_1=parameters["mass_1"],
-            mass_2=parameters["mass_2"],
-        )
+        # deltaT = gwutils.calculate_time_to_merger(
+        #     frequency=self.minimum_frequency,
+        #     mass_1=parameters["mass_1"],
+        #     mass_2=parameters["mass_2"],
+        # )
+        # Calculate in-band duration.
+        deltaT = gwutils.calculate_time_inband(
+                    frequency_min=self.minimum_frequency,
+                    frequency_max=self.maximum_frequency,
+                    mass_1=parameters["mass_1"],
+                    mass_2=parameters["mass_2"],
+                )
         deltaT = np.round(deltaT, 1)
         if deltaT > self.duration:
             msg = (
